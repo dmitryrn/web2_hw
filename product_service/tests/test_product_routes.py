@@ -12,6 +12,11 @@ SERVICE_DIR = Path(__file__).resolve().parents[1]
 if str(SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICE_DIR))
 
+import os
+
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+os.environ.setdefault("ORDER_SERVICE_URL", "http://localhost:8001")
+
 import db as db_module
 import main as app_module
 import services as services_module
