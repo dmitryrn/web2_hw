@@ -1,0 +1,66 @@
+services:
+  product-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: products
+      POSTGRES_USER: products
+      POSTGRES_PASSWORD: products
+    ports:
+      - "5433:5432"
+    volumes:
+      - product_postgres_data:/var/lib/postgresql/data
+
+  order-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: orders
+      POSTGRES_PASSWORD: orders
+    ports:
+      - "5434:5432"
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data
+
+  product-service:
+    build:
+      context: .
+      dockerfile: product_service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://products:products@product-postgres:5432/products
+      ORDER_SERVICE_URL: http://order-service:8001
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    depends_on:
+      - product-postgres
+    command: >
+      sh -c "
+        until pg_isready -h product-postgres -p 5432 -U products; do sleep 1; done &&
+        alembic upgrade head &&
+        exec uvicorn main:app --host 0.0.0.0 --port 8000
+      "
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order_service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://orders:orders@order-postgres:5432/orders
+      PRODUCT_SERVICE_URL: http://product-service:8000
+    ports:
+      - "8001:8001"
+    expose:
+      - "8001"
+    depends_on:
+      - order-postgres
+    command: >
+      sh -c "
+        until pg_isready -h order-postgres -p 5432 -U orders; do sleep 1; done &&
+        alembic upgrade head &&
+        exec uvicorn main:app --host 0.0.0.0 --port 8001
+      "
+
+volumes:
+  product_postgres_data:
+  order_postgres_data:
