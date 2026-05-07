@@ -32,7 +32,6 @@ class Product(Base):
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     stock: Mapped[int] = mapped_column(Integer, default=0)
     description: Mapped[str] = mapped_column(Text)
-    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     compatibility: Mapped[str | None] = mapped_column(Text, nullable=True)
     energy_rating: Mapped[str | None] = mapped_column(String(32), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

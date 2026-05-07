@@ -19,7 +19,6 @@ class ProductCreate(BaseModel):
     price: Decimal = Field(ge=0)
     stock: int = Field(ge=0, default=0)
     description: str = Field(min_length=1)
-    image_url: str | None = None
     compatibility: str | None = None
     energy_rating: str | None = Field(default=None, max_length=32)
 
@@ -29,7 +28,6 @@ class ProductUpdate(BaseModel):
     price: Decimal | None = Field(default=None, ge=0)
     stock: int | None = Field(default=None, ge=0)
     description: str | None = Field(default=None, min_length=1)
-    image_url: str | None = None
     compatibility: str | None = None
     energy_rating: str | None = Field(default=None, max_length=32)
 
@@ -42,7 +40,6 @@ class ProductRead(BaseModel):
     price: Decimal
     stock: int
     description: str
-    image_url: str | None
     compatibility: str | None
     energy_rating: str | None
     created_at: datetime

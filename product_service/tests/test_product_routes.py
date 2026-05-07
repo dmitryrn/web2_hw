@@ -31,7 +31,6 @@ def create_product(client: TestClient, **overrides: object) -> dict:
             "price": "129.99",
             "stock": 7,
             "description": "Tower cooler",
-            "image_url": "https://example.com/cooler.png",
             "compatibility": "AM4",
             "energy_rating": "A",
             **overrides,
@@ -110,7 +109,6 @@ def test_create_product_happy_path(client: TestClient) -> None:
         "price": "129.99",
         "stock": 7,
         "description": "Tower cooler",
-        "image_url": "https://example.com/cooler.png",
         "compatibility": "AM4",
         "energy_rating": "A",
         "created_at": product["created_at"],
@@ -127,7 +125,6 @@ def test_list_products_happy_path(client: TestClient) -> None:
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -146,7 +143,6 @@ def test_list_products_with_pagination(client: TestClient) -> None:
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -156,7 +152,6 @@ def test_list_products_with_pagination(client: TestClient) -> None:
         price="149.99",
         stock=0,
         description="Black edition cooler",
-        image_url="https://example.com/deepcool.png",
         compatibility="LGA1700",
         energy_rating="B",
     )
@@ -202,7 +197,6 @@ def test_list_products_returns_empty_list_when_offset_is_beyond_range(
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -221,7 +215,6 @@ def test_list_products_filters_by_compatibility_and_stock(client: TestClient) ->
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -231,7 +224,6 @@ def test_list_products_filters_by_compatibility_and_stock(client: TestClient) ->
         price="149.99",
         stock=0,
         description="Black edition cooler",
-        image_url="https://example.com/deepcool.png",
         compatibility="AM4",
         energy_rating="B",
     )
@@ -258,7 +250,6 @@ def test_list_products_filters_by_price_range_and_energy_rating(
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -268,7 +259,6 @@ def test_list_products_filters_by_price_range_and_energy_rating(
         price="149.99",
         stock=8,
         description="Black edition cooler",
-        image_url="https://example.com/deepcool.png",
         compatibility="LGA1700",
         energy_rating="B",
     )
@@ -294,7 +284,6 @@ def test_list_products_filters_by_search(client: TestClient) -> None:
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -313,7 +302,6 @@ def test_list_products_filters_by_multiple_conditions(client: TestClient) -> Non
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -323,7 +311,6 @@ def test_list_products_filters_by_multiple_conditions(client: TestClient) -> Non
         price="149.99",
         stock=0,
         description="Black edition cooler",
-        image_url="https://example.com/deepcool.png",
         compatibility="AM4",
         energy_rating="A",
     )
@@ -358,7 +345,6 @@ def test_lookup_products_returns_matching_products(client: TestClient) -> None:
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -547,7 +533,6 @@ def test_delete_product_image_returns_not_found_for_wrong_product(
         price="199.99",
         stock=3,
         description="Dual tower cooler",
-        image_url="https://example.com/noctua.png",
         compatibility="AM5",
         energy_rating="A+",
     )
@@ -571,7 +556,6 @@ def test_create_product_returns_validation_error_for_missing_required_fields(
         "/products",
         json={
             "stock": 7,
-            "image_url": "https://example.com/cooler.png",
         },
     )
 
