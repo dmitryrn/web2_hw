@@ -17,3 +17,9 @@ python -m pytest tests/ -v
 cd order_service
 python -m pytest tests/ -v
 ```
+
+### Admin service
+```
+cd admin_service
+JWT_SECRET=test-secret-with-at-least-32-bytes python -m pytest tests/ -v
+```

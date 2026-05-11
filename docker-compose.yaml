@@ -21,6 +21,17 @@ services:
     volumes:
       - order_postgres_data:/var/lib/postgresql/data
 
+  admin-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: admins
+      POSTGRES_USER: admins
+      POSTGRES_PASSWORD: admins
+    ports:
+      - "5435:5432"
+    volumes:
+      - admin_postgres_data:/var/lib/postgresql/data
+
   product-service:
     build:
       context: .
@@ -61,6 +72,28 @@ services:
         exec uvicorn main:app --host 0.0.0.0 --port 8001
       "
 
+  admin-service:
+    build:
+      context: .
+      dockerfile: admin_service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://admins:admins@admin-postgres:5432/admins
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    ports:
+      - "8002:8002"
+    expose:
+      - "8002"
+    depends_on:
+      - admin-postgres
+    command: >
+      sh -c "
+        until pg_isready -h admin-postgres -p 5432 -U admins; do sleep 1; done &&
+        alembic upgrade head &&
+        python seed.py --if-empty &&
+        exec uvicorn main:app --host 0.0.0.0 --port 8002
+      "
+
 volumes:
   product_postgres_data:
   order_postgres_data:
+  admin_postgres_data:
