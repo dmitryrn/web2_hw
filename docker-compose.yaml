@@ -78,7 +78,7 @@ services:
       dockerfile: admin_service/Dockerfile
     environment:
       DATABASE_URL: postgresql+asyncpg://admins:admins@admin-postgres:5432/admins
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_SECRET: development-admin-jwt-secret-32-bytes
     ports:
       - "8002:8002"
     expose:
