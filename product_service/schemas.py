@@ -51,6 +51,13 @@ class ProductLookupRequest(BaseModel):
     ids: list[int] = Field(min_length=1)
 
 
+class ProductLookupImageRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    image_url: str
+    sort_order: int
+
+
 class ProductLookupRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -58,6 +65,7 @@ class ProductLookupRead(BaseModel):
     name: str
     price: Decimal
     stock: int
+    images: list[ProductLookupImageRead] = Field(default_factory=list)
 
 
 class ProductImageCreate(BaseModel):

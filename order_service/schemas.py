@@ -33,17 +33,20 @@ class ProductLookupRead(BaseModel):
     name: str
     price: Decimal
     stock: int
+    images: list[dict] = Field(default_factory=list)
 
 
 class OrderItemRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    product_id: int
     price: Decimal
     quantity: int
     created_at: datetime
     name: str
     stock: int
+    image_url: str | None
 
 
 class OrderContainingProductRead(BaseModel):

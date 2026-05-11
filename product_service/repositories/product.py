@@ -50,7 +50,10 @@ class ProductRepository:
 
     async def lookup(self, ids: set[int]) -> list[Product]:
         result = await self._session.scalars(
-            select(Product).where(Product.id.in_(ids)).order_by(Product.id)
+            select(Product)
+            .options(selectinload(Product.images))
+            .where(Product.id.in_(ids))
+            .order_by(Product.id)
         )
         return list(result)
 

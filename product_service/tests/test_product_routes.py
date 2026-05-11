@@ -339,6 +339,12 @@ def test_get_product_happy_path(client: TestClient) -> None:
 
 def test_lookup_products_returns_matching_products(client: TestClient) -> None:
     first_product = create_product(client)
+    first_image = add_product_image(
+        client,
+        first_product["id"],
+        image_url="https://example.com/cooler-front.png",
+        sort_order=0,
+    )
     second_product = create_product(
         client,
         name="Noctua NH-D15",
@@ -361,12 +367,19 @@ def test_lookup_products_returns_matching_products(client: TestClient) -> None:
             "name": first_product["name"],
             "price": first_product["price"],
             "stock": first_product["stock"],
+            "images": [
+                {
+                    "image_url": first_image["image_url"],
+                    "sort_order": first_image["sort_order"],
+                }
+            ],
         },
         {
             "id": second_product["id"],
             "name": second_product["name"],
             "price": second_product["price"],
             "stock": second_product["stock"],
+            "images": [],
         },
     ]
 

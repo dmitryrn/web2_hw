@@ -25,13 +25,19 @@ from schemas import ProductLookupRead
 
 
 def product_data(
-    id: int, price: str, *, name: str | None = None, stock: int = 5
+    id: int,
+    price: str,
+    *,
+    name: str | None = None,
+    stock: int = 5,
+    images: list[dict] | None = None,
 ) -> ProductLookupRead:
     return ProductLookupRead(
         id=id,
         name=name or f"Product {id}",
         price=price,
         stock=stock,
+        images=images or [],
     )
 
 
@@ -133,7 +139,16 @@ def test_list_orders_returns_empty_list_when_no_orders(client: TestClient) -> No
 def test_create_order_happy_path(
     client: TestClient, product_catalog: dict[int, ProductLookupRead]
 ) -> None:
-    product_catalog[1] = product_data(1, "199.99", name="Cooler Master 500", stock=7)
+    product_catalog[1] = product_data(
+        1,
+        "199.99",
+        name="Cooler Master 500",
+        stock=7,
+        images=[
+            {"image_url": "https://example.com/side.png", "sort_order": 2},
+            {"image_url": "https://example.com/front.png", "sort_order": 1},
+        ],
+    )
     product_catalog[2] = product_data(2, "49.50", name="Fan 120", stock=11)
 
     response = client.post(
@@ -167,19 +182,23 @@ def test_create_order_happy_path(
         "items": [
             {
                 "id": 1,
+                "product_id": 1,
                 "price": "199.99",
                 "quantity": 2,
                 "created_at": response.json()["items"][0]["created_at"],
                 "name": "Cooler Master 500",
                 "stock": 7,
+                "image_url": "https://example.com/front.png",
             },
             {
                 "id": 2,
+                "product_id": 2,
                 "price": "49.50",
                 "quantity": 3,
                 "created_at": response.json()["items"][1]["created_at"],
                 "name": "Fan 120",
                 "stock": 11,
+                "image_url": None,
             },
         ],
     }

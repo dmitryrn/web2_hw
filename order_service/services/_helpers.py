@@ -42,6 +42,14 @@ async def _serialize_orders(orders: list[Order]) -> list[OrderRead]:
             f"Product data unavailable: {', '.join(map(str, missing_product_ids))}"
         )
 
+    def first_image_url(product: ProductLookupRead) -> str | None:
+        if not product.images:
+            return None
+
+        return sorted(product.images, key=lambda image: image.get("sort_order", 0))[0].get(
+            "image_url"
+        )
+
     return [
         OrderRead(
             id=order.id,
@@ -60,11 +68,13 @@ async def _serialize_orders(orders: list[Order]) -> list[OrderRead]:
             items=[
                 OrderItemRead(
                     id=item.id,
+                    product_id=item.product_id,
                     price=item.product_price,
                     quantity=item.quantity,
                     created_at=item.created_at,
                     name=products_by_id[item.product_id].name,
                     stock=products_by_id[item.product_id].stock,
+                    image_url=first_image_url(products_by_id[item.product_id]),
                 )
                 for item in order.items
             ],
