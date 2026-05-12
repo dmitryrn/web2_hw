@@ -18,6 +18,7 @@ from schemas import (
     OrderRead,
     OrderStatusUpdate,
 )
+from security import require_jwt
 from services import order_service as order_svc
 
 router = APIRouter()
@@ -35,7 +36,7 @@ def _handle_service_error(exc: Exception) -> None:
     raise exc
 
 
-@router.get("/orders", response_model=list[OrderRead])
+@router.get("/orders", response_model=list[OrderRead], dependencies=[Depends(require_jwt)])
 async def list_orders(
     session: AsyncSession = Depends(get_session),
     limit: int = Query(100, ge=1, le=1000),

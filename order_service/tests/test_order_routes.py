@@ -17,7 +17,9 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("PRODUCT_SERVICE_URL", "http://localhost:8000")
+os.environ.setdefault("JWT_SECRET", "test-secret-with-at-least-32-bytes")
 
+import jwt
 import main as app_module
 from db import engine as db_engine, get_session as db_get_session
 from models import Base, OrderStatus
@@ -56,6 +58,15 @@ def create_order(client: TestClient, **overrides: object) -> dict:
     )
     assert response.status_code == 201
     return response.json()
+
+
+def auth_headers() -> dict[str, str]:
+    token = jwt.encode(
+        {"sub": "admin", "exp": int(time.time()) + 3600},
+        os.environ["JWT_SECRET"],
+        algorithm="HS256",
+    )
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
@@ -126,6 +137,7 @@ def client(
     product_catalog: dict[int, ProductLookupRead],
 ) -> Iterator[TestClient]:
     with TestClient(app_module.app) as test_client:
+        test_client.headers.update(auth_headers())
         yield test_client
 
 
@@ -134,6 +146,20 @@ def test_list_orders_returns_empty_list_when_no_orders(client: TestClient) -> No
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_list_orders_requires_bearer_token(client: TestClient) -> None:
+    response = client.get("/orders", headers={"Authorization": ""})
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Unauthorized"}
+
+
+def test_list_orders_rejects_invalid_token(client: TestClient) -> None:
+    response = client.get("/orders", headers={"Authorization": "Bearer invalid"})
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Unauthorized"}
 
 
 def test_create_order_happy_path(
