@@ -139,6 +139,7 @@ def generate_seed_products(count: int = 100) -> list[dict[str, object]]:
 
 async def seed_products(*, replace: bool, if_empty: bool) -> None:
     os.environ.setdefault("ORDER_SERVICE_URL", "http://localhost:8001")
+    os.environ.setdefault("JWT_SECRET", "development-admin-jwt-secret-32-bytes")
 
     from sqlalchemy import delete, func, select
 

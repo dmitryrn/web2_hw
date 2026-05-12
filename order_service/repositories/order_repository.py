@@ -48,9 +48,9 @@ async def get_orders(
     direction = desc if order_by.startswith("-") else asc
     sort_field = order_by.lstrip("-")
     if sort_field == "total_amount":
-        query = query.order_by(direction(total_amount_subq.c.total_amount))
+        query = query.order_by(direction(total_amount_subq.c.total_amount), Order.id)
     else:
-        query = query.order_by(direction(Order.updated_at))
+        query = query.order_by(direction(Order.updated_at), Order.id)
 
     result = await session.scalars(query.limit(limit).offset(offset))
     return list(result)
