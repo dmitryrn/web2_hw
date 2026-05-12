@@ -1,8 +1,10 @@
 import asyncio
 import sys
+import time
 from collections.abc import Iterator
 from pathlib import Path
 
+import jwt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -16,11 +18,21 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("ORDER_SERVICE_URL", "http://localhost:8001")
+os.environ.setdefault("JWT_SECRET", "test-secret-with-at-least-32-bytes")
 
 import db as db_module
 import main as app_module
 import services as services_module
 from models import Base
+
+
+def auth_headers() -> dict[str, str]:
+    token = jwt.encode(
+        {"sub": "admin", "exp": int(time.time()) + 3600},
+        os.environ["JWT_SECRET"],
+        algorithm="HS256",
+    )
+    return {"Authorization": f"Bearer {token}"}
 
 
 def create_product(client: TestClient, **overrides: object) -> dict:
@@ -93,6 +105,7 @@ def client(orders_by_product: dict[int, list[dict]]) -> Iterator[TestClient]:
     try:
         asyncio.run(prepare_db())
         with TestClient(app_module.app) as test_client:
+            test_client.headers.update(auth_headers())
             yield test_client
     finally:
         app_module.app.dependency_overrides.clear()
@@ -335,6 +348,47 @@ def test_get_product_happy_path(client: TestClient) -> None:
 
     assert response.status_code == 200
     assert response.json() == product
+
+
+def test_public_product_routes_do_not_require_bearer_token(client: TestClient) -> None:
+    product = create_product(client)
+
+    list_response = client.get("/products", headers={"Authorization": ""})
+    detail_response = client.get(
+        f"/products/{product['id']}", headers={"Authorization": ""}
+    )
+
+    assert list_response.status_code == 200
+    assert detail_response.status_code == 200
+
+
+def test_create_product_requires_bearer_token(client: TestClient) -> None:
+    response = client.post(
+        "/products",
+        json={
+            "name": "Cooler Master 500",
+            "price": "129.99",
+            "stock": 7,
+            "description": "Tower cooler",
+            "compatibility": "AM4",
+            "energy_rating": "A",
+        },
+        headers={"Authorization": ""},
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Unauthorized"}
+
+
+def test_lookup_products_requires_bearer_token(client: TestClient) -> None:
+    response = client.post(
+        "/products/lookup",
+        json={"ids": [1]},
+        headers={"Authorization": ""},
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Unauthorized"}
 
 
 def test_lookup_products_returns_matching_products(client: TestClient) -> None:

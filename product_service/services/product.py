@@ -8,6 +8,7 @@ from schemas import (
     ProductImageUpdate,
     ProductUpdate,
 )
+from security import auth_headers_from_request
 from services.exceptions import (
     ProductInUseError,
     ProductNotFoundError,
@@ -64,7 +65,8 @@ class ProductService:
         async with httpx.AsyncClient(timeout=5.0) as client:
             try:
                 response = await client.get(
-                    f"{settings.order_service_url}/orders/by-product/{product_id}"
+                    f"{settings.order_service_url}/orders/by-product/{product_id}",
+                    headers=auth_headers_from_request(),
                 )
             except httpx.HTTPError:
                 raise ServiceUnavailableError("Order service unavailable")

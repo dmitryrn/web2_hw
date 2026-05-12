@@ -5,6 +5,7 @@ import httpx
 from exceptions import ProductNotFoundError, ProductServiceUnavailableError
 from models import Order, OrderItem
 from schemas import OrderItemRead, OrderRead, ProductLookupRead
+from security import service_auth_headers
 from settings import settings
 
 
@@ -18,6 +19,7 @@ async def fetch_products_by_ids(product_ids: list[int]) -> dict[int, ProductLook
             response = await client.post(
                 f"{settings.product_service_url}/products/lookup",
                 json={"ids": unique_product_ids},
+                headers=service_auth_headers(),
             )
         except httpx.HTTPError as exc:
             raise ProductServiceUnavailableError("Product service unavailable") from exc

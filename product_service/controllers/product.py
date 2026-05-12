@@ -16,6 +16,7 @@ from schemas import (
     ProductRead,
     ProductUpdate,
 )
+from security import require_jwt
 from services import ProductImageService, ProductService
 from services.exceptions import (
     ProductInUseError,
@@ -75,7 +76,11 @@ async def get_product(
     return product
 
 
-@router.post("/products/lookup", response_model=list[ProductLookupRead])
+@router.post(
+    "/products/lookup",
+    response_model=list[ProductLookupRead],
+    dependencies=[Depends(require_jwt)],
+)
 async def lookup_products(
     payload: ProductLookupRequest,
     service: ProductService = Depends(get_product_service),
@@ -84,7 +89,10 @@ async def lookup_products(
 
 
 @router.post(
-    "/products", response_model=ProductRead, status_code=status.HTTP_201_CREATED
+    "/products",
+    response_model=ProductRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_jwt)],
 )
 async def create_product(
     payload: ProductCreate,
@@ -94,7 +102,9 @@ async def create_product(
     return await service.get(product.id)
 
 
-@router.patch("/products/{id}", response_model=ProductRead)
+@router.patch(
+    "/products/{id}", response_model=ProductRead, dependencies=[Depends(require_jwt)]
+)
 async def patch_product(
     id: int,
     payload: ProductUpdate,
@@ -108,7 +118,7 @@ async def patch_product(
     return product
 
 
-@router.delete("/products/{id}")
+@router.delete("/products/{id}", dependencies=[Depends(require_jwt)])
 async def delete_product(
     id: int,
     service: ProductService = Depends(get_product_service),
@@ -132,7 +142,11 @@ async def delete_product(
     return {"id": id}
 
 
-@router.get("/products/{id}/images", response_model=list[ProductImageRead])
+@router.get(
+    "/products/{id}/images",
+    response_model=list[ProductImageRead],
+    dependencies=[Depends(require_jwt)],
+)
 async def list_product_images(
     id: int,
     service: ProductImageService = Depends(get_image_service),
@@ -149,6 +163,7 @@ async def list_product_images(
     "/products/{id}/images",
     response_model=ProductImageRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_jwt)],
 )
 async def add_product_image(
     id: int,
@@ -163,7 +178,11 @@ async def add_product_image(
         )
 
 
-@router.patch("/products/{id}/images/{imageId}", response_model=ProductImageRead)
+@router.patch(
+    "/products/{id}/images/{imageId}",
+    response_model=ProductImageRead,
+    dependencies=[Depends(require_jwt)],
+)
 async def update_product_image(
     id: int,
     imageId: int,
@@ -178,7 +197,9 @@ async def update_product_image(
     return image
 
 
-@router.delete("/products/{id}/images/{imageId}")
+@router.delete(
+    "/products/{id}/images/{imageId}", dependencies=[Depends(require_jwt)]
+)
 async def delete_product_image(
     id: int,
     imageId: int,

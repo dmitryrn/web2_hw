@@ -230,6 +230,27 @@ def test_create_order_happy_path(
     }
 
 
+def test_create_order_does_not_require_bearer_token(
+    client: TestClient, product_catalog: dict[int, ProductLookupRead]
+) -> None:
+    product_catalog[1] = product_data(1, "199.99")
+
+    response = client.post(
+        "/orders",
+        json={
+            "customer_phone": "+1234567890",
+            "customer_city": "Almaty",
+            "customer_street": "Satpayev",
+            "customer_house": "10A",
+            "customer_building": "2",
+            "items": [{"product_id": 1, "quantity": 1}],
+        },
+        headers={"Authorization": ""},
+    )
+
+    assert response.status_code == 201
+
+
 def test_list_orders_happy_path(
     client: TestClient, product_catalog: dict[int, ProductLookupRead]
 ) -> None:
@@ -262,6 +283,20 @@ def test_get_order_happy_path(
 
     assert response.status_code == 200
     assert response.json() == created_order
+
+
+def test_get_order_requires_bearer_token(
+    client: TestClient, product_catalog: dict[int, ProductLookupRead]
+) -> None:
+    product_catalog[1] = product_data(1, "199.99")
+    created_order = create_order(client)
+
+    response = client.get(
+        f"/orders/{created_order['id']}", headers={"Authorization": ""}
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Unauthorized"}
 
 
 def test_update_order_status_happy_path(

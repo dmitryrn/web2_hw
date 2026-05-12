@@ -62,7 +62,7 @@ async def list_orders(
         _handle_service_error(exc)
 
 
-@router.get("/orders/{id}", response_model=OrderRead)
+@router.get("/orders/{id}", response_model=OrderRead, dependencies=[Depends(require_jwt)])
 async def get_order(id: int, session: AsyncSession = Depends(get_session)) -> OrderRead:
     try:
         return await order_svc.get_order(session, id)
@@ -71,7 +71,9 @@ async def get_order(id: int, session: AsyncSession = Depends(get_session)) -> Or
 
 
 @router.get(
-    "/orders/by-product/{product_id}", response_model=list[OrderContainingProductRead]
+    "/orders/by-product/{product_id}",
+    response_model=list[OrderContainingProductRead],
+    dependencies=[Depends(require_jwt)],
 )
 async def list_orders_by_product(
     product_id: int, session: AsyncSession = Depends(get_session)
@@ -90,7 +92,9 @@ async def create_order(
         _handle_service_error(exc)
 
 
-@router.patch("/orders/{id}/status", response_model=OrderRead)
+@router.patch(
+    "/orders/{id}/status", response_model=OrderRead, dependencies=[Depends(require_jwt)]
+)
 async def update_order_status(
     id: int,
     payload: OrderStatusUpdate,
@@ -102,7 +106,9 @@ async def update_order_status(
         _handle_service_error(exc)
 
 
-@router.patch("/orders/{id}/cancel", response_model=OrderRead)
+@router.patch(
+    "/orders/{id}/cancel", response_model=OrderRead, dependencies=[Depends(require_jwt)]
+)
 async def cancel_order(
     id: int,
     payload: OrderCancel,

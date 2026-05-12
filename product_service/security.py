@@ -1,5 +1,4 @@
 import logging
-import time
 from contextvars import ContextVar
 
 import jwt
@@ -12,13 +11,12 @@ logger = logging.getLogger(__name__)
 current_authorization: ContextVar[str] = ContextVar("current_authorization", default="")
 
 
-def service_auth_headers() -> dict[str, str]:
-    token = jwt.encode(
-        {"sub": "order-service", "exp": int(time.time()) + 300},
-        settings.jwt_secret,
-        algorithm="HS256",
-    )
-    return {"Authorization": f"Bearer {token}"}
+def auth_headers_from_request() -> dict[str, str]:
+    authorization = current_authorization.get()
+    if not authorization:
+        return {}
+
+    return {"Authorization": authorization}
 
 
 def validate_authorization(authorization: str) -> None:
